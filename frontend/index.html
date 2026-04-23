@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Batch 6 – AI Smart Irrigation System</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#070b12;--bg1:#0d1520;--bg2:#111c2e;--border:rgba(56,189,248,.12);--accent:#38bdf8;--accent2:#34d399;--accent3:#f59e0b;--danger:#f87171;--text:#e2e8f0;--muted:#64748b;--card-r:16px;--font-h:'Syne',sans-serif;--font-m:'Space Mono',monospace;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px}
+body{background:var(--bg);color:var(--text);font-family:var(--font-m);min-height:100vh;display:flex;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(ellipse 80% 60% at 20% 10%,rgba(56,189,248,.06) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 80% 80%,rgba(52,211,153,.05) 0%,transparent 60%);pointer-events:none;z-index:0;}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg1)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+#sidebar{width:240px;min-height:100vh;background:var(--bg1);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;padding:0 0 24px;}
+.logo{padding:24px 20px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+.logo-icon{width:40px;height:40px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:grid;place-items:center;font-size:20px;}
+.logo-text{font-family:var(--font-h);font-size:1.15rem;font-weight:800;}.logo-text span{color:var(--accent)}
+.logo-sub{font-size:.65rem;color:var(--muted);}
+.nav-section{padding:20px 12px 8px;font-size:.65rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;margin:2px 8px;border-radius:10px;cursor:pointer;font-size:.82rem;color:var(--muted);transition:all .2s;}
+.nav-item:hover,.nav-item.active{background:rgba(56,189,248,.1);color:var(--accent);}
+.nav-item.active{border-left:2px solid var(--accent);margin-left:6px;}
+.sidebar-footer{margin-top:auto;padding:16px 20px;border-top:1px solid var(--border);}
+.user-pill{display:flex;align-items:center;gap:10px;background:var(--bg2);border-radius:10px;padding:10px 12px;}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-size:.75rem;font-weight:700;}
+.user-name{font-size:.8rem;font-weight:700;font-family:var(--font-h);}
+.user-role{font-size:.65rem;color:var(--muted);}
+#logout-btn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px;margin-left:auto;}
+#logout-btn:hover{color:var(--danger);}
+#main{margin-left:240px;flex:1;min-height:100vh;position:relative;z-index:1;}
+.topbar{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;border-bottom:1px solid var(--border);background:rgba(7,11,18,.8);backdrop-filter:blur(12px);position:sticky;top:0;z-index:50;}
+.page-title{font-family:var(--font-h);font-size:1.3rem;font-weight:700;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.status-badge{display:flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:5px 14px;font-size:.72rem;}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--accent2);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.content{padding:28px;display:flex;flex-direction:column;gap:24px;}
+.card{background:var(--bg1);border:1px solid var(--border);border-radius:var(--card-r);padding:22px;}
+.card-title{font-family:var(--font-h);font-size:.9rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:900px){.grid-3{grid-template-columns:1fr 1fr}.grid-2{grid-template-columns:1fr}}
+.stat-card{background:var(--bg1);border:1px solid var(--border);border-radius:var(--card-r);padding:20px;position:relative;overflow:hidden;transition:border-color .2s,transform .15s;}
+.stat-card:hover{border-color:rgba(56,189,248,.3);transform:translateY(-2px);}
+.stat-label{font-size:.7rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;}
+.stat-value{font-family:var(--font-h);font-size:2.2rem;font-weight:800;line-height:1;}
+.stat-unit{font-size:.8rem;color:var(--muted);margin-left:4px;}
+.stat-sub{font-size:.72rem;color:var(--muted);margin-top:6px;}
+.stat-icon{position:absolute;top:18px;right:18px;font-size:1.4rem;opacity:.5;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end;}
+@media(max-width:800px){.form-grid{grid-template-columns:1fr 1fr}}
+.field{display:flex;flex-direction:column;gap:6px;}
+label{font-size:.72rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;}
+input,select{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:10px;font-family:var(--font-m);font-size:.85rem;outline:none;transition:border-color .2s;width:100%;}
+input:focus,select:focus{border-color:var(--accent);}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;border-radius:10px;border:none;cursor:pointer;font-family:var(--font-m);font-size:.82rem;font-weight:700;transition:all .2s;white-space:nowrap;}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#0ea5e9);color:#000;}
+.btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px);}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.btn-success{background:rgba(52,211,153,.15);border:1px solid rgba(52,211,153,.3);color:var(--accent2);}
+.btn-danger{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.25);color:var(--danger);}
+.btn-ghost{background:var(--bg2);border:1px solid var(--border);color:var(--text);}
+.btn-sm{padding:7px 14px;font-size:.75rem;}
+#rec-banner{border-radius:var(--card-r);padding:20px 24px;display:none;align-items:center;gap:16px;}
+.rec-irrigate{background:linear-gradient(135deg,rgba(56,189,248,.12),rgba(14,165,233,.06));border:1px solid rgba(56,189,248,.3);}
+.rec-skip{background:linear-gradient(135deg,rgba(52,211,153,.1),rgba(16,185,129,.05));border:1px solid rgba(52,211,153,.25);}
+.rec-icon{font-size:2.4rem;flex-shrink:0;}
+.rec-title{font-family:var(--font-h);font-size:1.15rem;font-weight:800;}
+.rec-reason{font-size:.8rem;color:var(--muted);margin-top:4px;line-height:1.5;}
+.rec-confidence{margin-left:auto;flex-shrink:0;text-align:center;background:rgba(0,0,0,.3);border-radius:10px;padding:10px 16px;}
+.rec-confidence-num{font-family:var(--font-h);font-size:1.8rem;font-weight:800;line-height:1;}
+.rec-confidence-label{font-size:.65rem;color:var(--muted);}
+.alert-card{border-radius:10px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;font-size:.82rem;}
+.alert-high{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);}
+.alert-medium{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);}
+.alert-normal{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);}
+.crop-rec-card{border-radius:10px;padding:16px;margin-top:12px;}
+.crop-rec-change{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);}
+.crop-rec-ok{background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);}
+.pump-status{font-family:var(--font-h);font-size:1.4rem;font-weight:800;padding:6px 0;}
+.pump-on{color:var(--accent2)}.pump-off{color:var(--danger)}
+.pump-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.toggle-wrap{display:flex;align-items:center;gap:10px;font-size:.82rem;}
+.toggle{width:44px;height:24px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:var(--accent);}
+.toggle::after{content:'';position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;top:2px;left:2px;transition:transform .2s;}
+.toggle.on::after{transform:translateX(20px);}
+.live-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.2);border-radius:20px;padding:2px 8px;font-size:.65rem;color:var(--accent2);}
+.chart-wrap{position:relative;height:200px;}
+.divider{height:1px;background:var(--border);margin:8px 0;}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:6px;font-size:.7rem;}
+.chip-blue{background:rgba(56,189,248,.1);color:var(--accent);border:1px solid rgba(56,189,248,.2);}
+.chip-green{background:rgba(52,211,153,.1);color:var(--accent2);border:1px solid rgba(52,211,153,.2);}
+.chip-amber{background:rgba(245,158,11,.1);color:var(--accent3);border:1px solid rgba(245,158,11,.2);}
+.chip-red{background:rgba(248,113,113,.1);color:var(--danger);border:1px solid rgba(248,113,113,.2);}
+#login-page{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;}
+.login-card{background:var(--bg1);border:1px solid var(--border);border-radius:20px;padding:40px;width:100%;max-width:400px;animation:fadeUp .5s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.login-logo{text-align:center;margin-bottom:28px;}
+.login-logo-icon{width:60px;height:60px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:16px;display:inline-grid;place-items:center;font-size:28px;margin-bottom:12px;}
+.login-title{font-family:var(--font-h);font-size:1.5rem;font-weight:800;}
+.login-sub{color:var(--muted);font-size:.8rem;margin-top:4px;}
+.login-form{display:flex;flex-direction:column;gap:14px;margin-top:24px;}
+.login-error{color:var(--danger);font-size:.78rem;text-align:center;display:none;}
+.demo-note{background:rgba(56,189,248,.06);border:1px solid rgba(56,189,248,.15);border-radius:8px;padding:10px 14px;font-size:.75rem;color:var(--muted);text-align:center;}
+.btn-google{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:13px;background:#fff;color:#3c4043;border:1px solid #dadce0;border-radius:10px;cursor:pointer;font-family:var(--font-m);font-size:.9rem;font-weight:700;transition:all .2s;}
+.btn-google:hover{background:#f8f9fa;box-shadow:0 2px 12px rgba(0,0,0,.15);transform:translateY(-1px);}
+.btn-google:disabled{opacity:.6;cursor:not-allowed;}
+.divider-text{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:.75rem;}
+.divider-text::before,.divider-text::after{content:"";flex:1;height:1px;background:var(--border);}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#000;border-radius:50%;animation:spin .6s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+#toast{position:fixed;bottom:24px;right:24px;z-index:9000;background:var(--bg1);border:1px solid var(--border);border-radius:10px;padding:12px 20px;font-size:.82rem;transform:translateY(80px);opacity:0;transition:all .3s;max-width:320px;}
+#toast.show{transform:translateY(0);opacity:1;}
+.fade-in{animation:fadeIn .4s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+#app{display:none;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-page">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">🌿</div>
+      <div class="login-title">Batch <span style="color:var(--accent)">6</span></div>
+      <div class="login-sub" style="font-size:.9rem;font-weight:600;color:var(--text);margin-top:4px;">AI Smart Irrigation System</div>
+      <div class="login-sub" style="margin-top:2px;">AI Smart Irrigation · Final Year Project</div>
+    </div>
+    <div class="login-form">
+      <div id="login-error" class="login-error"></div>
+      <button class="btn-google" onclick="handleGoogleLogin()" id="login-btn">
+        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+        Continue with Google
+      </button>
+      <div class="divider-text"><span>or</span></div>
+      <button class="btn btn-ghost" style="width:100%;padding:11px" onclick="handleDemo()">🎮 Try Demo Mode</button>
+      <div class="demo-note">New accounts are created automatically on first Google sign-in. No password needed!</div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <nav id="sidebar">
+    <div class="logo">
+      <div class="logo-icon">🌿</div>
+      <div><div class="logo-text">Batch <span>6</span></div><div class="logo-sub">AI Smart Irrigation System</div></div>
+    </div>
+    <div class="nav-section">Main</div>
+    <a class="nav-item active" onclick="showPage('dashboard')"><span>📊</span> Dashboard</a>
+    <a class="nav-item" onclick="showPage('anomaly')"><span>🚨</span> Anomaly Detection</a>
+    <a class="nav-item" onclick="showPage('recommend')"><span>🌱</span> Crop Recommendation</a>
+    <a class="nav-item" onclick="showPage('analytics')"><span>📈</span> Analytics</a>
+    <a class="nav-item" onclick="showPage('pump')"><span>💧</span> Pump Control</a>
+    <a class="nav-item" onclick="showPage('settings')"><span>⚙️</span> Settings</a>
+    <div class="sidebar-footer">
+      <div class="user-pill">
+        <div class="avatar" id="user-avatar">F</div>
+        <div><div class="user-name" id="user-name-display">Farmer</div><div class="user-role">Administrator</div></div>
+        <button id="logout-btn" onclick="handleLogout()">⏻</button>
+      </div>
+    </div>
+  </nav>
+
+  <div id="main">
+    <div class="topbar">
+      <div class="page-title" id="page-title">Dashboard</div>
+      <div class="topbar-right">
+        <div class="status-badge" id="anomaly-badge" style="display:none;border-color:rgba(248,113,113,.4);color:var(--danger);">⚠️ Anomaly Detected</div>
+        <div class="status-badge" id="device-status"><div class="dot" id="device-dot" style="background:var(--muted);"></div> <span id="device-status-text">Checking...</span></div>
+        <div class="status-badge" id="firebase-status">🔴 Firebase</div>
+        <div class="status-badge" id="last-update">–</div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="content fade-in">
+      <div class="card">
+        <div class="card-title"><span>🎯</span> AI Irrigation Prediction</div>
+        <div class="form-grid">
+          <div class="field">
+            <label>Crop Type</label>
+            <select id="crop-select">
+              <option value="rice">🌾 Rice</option>
+              <option value="wheat">🌿 Wheat</option>
+              <option value="maize">🌽 Maize</option>
+              <option value="sugarcane">🎋 Sugarcane</option>
+              <option value="vegetables">🥦 Vegetables</option>
+              <option value="cotton">🌸 Cotton</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>City</label>
+            <input type="text" id="city-input" placeholder="e.g. Hyderabad" value="Hyderabad"/>
+          </div>
+          <div class="field">
+            <label>Soil Moisture % <span class="live-badge">● LIVE</span></label>
+            <input type="number" id="moisture-input" placeholder="0–100" min="0" max="100"/>
+          </div>
+          <div>
+            <label style="display:block;margin-bottom:6px;">&nbsp;</label>
+            <button class="btn btn-primary" id="predict-btn" onclick="runPrediction()">⚡ Analyse</button>
+          </div>
+        </div>
+        <div style="margin-top:12px;" class="toggle-wrap">
+          <div class="toggle" id="auto-toggle" onclick="toggleAuto()"></div>
+          <span>AUTO Mode — pump controlled automatically by AI</span>
+        </div>
+      </div>
+
+      <div id="rec-banner">
+        <div class="rec-icon" id="rec-icon">💧</div>
+        <div style="flex:1;">
+          <div class="rec-title" id="rec-title">–</div>
+          <div class="rec-reason" id="rec-reason"></div>
+          <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;" id="rec-chips"></div>
+        </div>
+        <div class="rec-confidence">
+          <div class="rec-confidence-num" id="rec-confidence">–</div>
+          <div class="rec-confidence-label">CONFIDENCE</div>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="stat-card">
+          <div class="stat-icon">💧</div>
+          <div class="stat-label">Soil Moisture <span class="live-badge">● LIVE</span></div>
+          <div class="stat-value" id="stat-moisture">–<span class="stat-unit">%</span></div>
+          <div style="background:var(--bg2);border-radius:4px;height:4px;margin-top:10px;overflow:hidden;">
+            <div id="moisture-bar" style="height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width .8s;border-radius:4px;"></div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🌡</div>
+          <div class="stat-label">Temperature <span class="live-badge">● WEATHER</span></div>
+          <div class="stat-value" id="stat-temp">–<span class="stat-unit">°C</span></div>
+          <div class="stat-sub" id="stat-temp-city">Run prediction first</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🌧</div>
+          <div class="stat-label">Rain Forecast <span class="live-badge">● WEATHER</span></div>
+          <div class="stat-value" id="stat-rain">–<span class="stat-unit">mm</span></div>
+          <div class="stat-sub" id="stat-desc">Run prediction first</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><span>🌤</span> Live Weather</div>
+          <div id="weather-card-content"><div style="color:var(--muted);font-size:.82rem;text-align:center;padding:20px 0;">🌤 Enter city and click Analyse to load weather data</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span>🌧</span> 7-Day Rain Forecast</div>
+          <div class="chart-wrap"><canvas id="rain-chart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><span>⚙️</span> Pump Control <span class="live-badge">● LIVE</span></div>
+          <div style="margin-bottom:16px;">
+            <div class="stat-label">Status</div>
+            <div class="pump-status pump-off" id="pump-status-display">OFF</div>
+          </div>
+          <div class="pump-controls">
+            <button class="btn btn-success btn-sm" onclick="setPump('ON')">▶ Turn ON</button>
+            <button class="btn btn-danger btn-sm" onclick="setPump('OFF')">■ Turn OFF</button>
+          </div>
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);" class="toggle-wrap">
+            <div class="toggle" id="mode-toggle" onclick="toggleMode()"></div>
+            <span id="mode-label">MANUAL</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span>📋</span> Prediction History</div>
+          <div id="history-list" style="display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto;">
+            <div style="color:var(--muted);font-size:.8rem;">No predictions yet.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANOMALY DETECTION -->
+    <div id="page-anomaly" class="content fade-in" style="display:none;">
+      <div class="card">
+        <div class="card-title"><span>🚨</span> Anomaly Detection System</div>
+        <div style="font-size:.85rem;color:var(--muted);margin-bottom:16px;">Automatically detects sensor faults, sudden moisture drops, and abnormal patterns in real time.</div>
+        <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+          <div class="field" style="flex:1;min-width:180px;">
+            <label>Test Moisture Value</label>
+            <input type="number" id="anomaly-test-val" placeholder="Enter moisture %" min="0" max="100"/>
+          </div>
+          <div>
+            <label style="display:block;margin-bottom:6px;">&nbsp;</label>
+            <button class="btn btn-primary btn-sm" onclick="testAnomaly()">🔍 Check</button>
+          </div>
+        </div>
+        <div id="anomaly-results"><div style="color:var(--muted);font-size:.82rem;">Run prediction or enter a value to check for anomalies.</div></div>
+      </div>
+      <div class="grid-3">
+        <div class="stat-card"><div class="stat-icon">🔍</div><div class="stat-label">Checks Done</div><div class="stat-value" id="anomaly-checks">0</div></div>
+        <div class="stat-card"><div class="stat-icon">⚠️</div><div class="stat-label">Anomalies Found</div><div class="stat-value" id="anomaly-found" style="color:var(--danger);">0</div></div>
+        <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-label">System Status</div><div class="stat-value" id="anomaly-status" style="font-size:1.2rem;color:var(--accent2);">NORMAL</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span>📖</span> Anomaly Types Detected</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div class="alert-card alert-high"><span>🔴</span><div><strong>Out of Range</strong> — Moisture outside 0-100%. Sensor hardware fault.</div></div>
+          <div class="alert-card alert-high"><span>🔴</span><div><strong>Sudden Drop</strong> — Moisture drops more than 40% in one reading.</div></div>
+          <div class="alert-card alert-high"><span>🔴</span><div><strong>Prolonged Dry</strong> — Moisture below 10% for 10+ consecutive readings.</div></div>
+          <div class="alert-card alert-medium"><span>🟡</span><div><strong>Sensor Stuck</strong> — Same value for 5+ readings.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CROP RECOMMENDATION -->
+    <div id="page-recommend" class="content fade-in" style="display:none;">
+      <div class="card">
+        <div class="card-title"><span>🌱</span> Crop Recommendation Engine</div>
+        <div style="font-size:.85rem;color:var(--muted);margin-bottom:20px;">Analyses your water usage patterns and recommends more water-efficient crops when overuse is detected.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end;">
+          <div class="field"><label>Current Crop</label>
+            <select id="rec-crop">
+              <option value="rice">🌾 Rice</option><option value="wheat">🌿 Wheat</option>
+              <option value="maize">🌽 Maize</option><option value="sugarcane">🎋 Sugarcane</option>
+              <option value="vegetables">🥦 Vegetables</option><option value="cotton">🌸 Cotton</option>
+            </select>
+          </div>
+          <div class="field"><label>Total Readings</label><input type="number" id="rec-total" placeholder="e.g. 30" value="30"/></div>
+          <div class="field"><label>Times Irrigated</label><input type="number" id="rec-irrigated" placeholder="e.g. 22" value="22"/></div>
+          <div><label style="display:block;margin-bottom:6px;">&nbsp;</label><button class="btn btn-primary btn-sm" onclick="getCropRec()">🌱 Analyse</button></div>
+        </div>
+        <div id="crop-rec-result" style="margin-top:20px;"><div style="color:var(--muted);font-size:.82rem;">Enter usage data and click Analyse.</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span>💧</span> Crop Water Requirements</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg2);border-radius:8px;"><span>🌾 Rice</span><span class="chip chip-red">HIGH water</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg2);border-radius:8px;"><span>🎋 Sugarcane</span><span class="chip chip-red">HIGH water</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg2);border-radius:8px;"><span>🌽 Maize</span><span class="chip chip-amber">MEDIUM water</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg2);border-radius:8px;"><span>🥦 Vegetables</span><span class="chip chip-amber">MEDIUM water</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg2);border-radius:8px;"><span>🌿 Wheat</span><span class="chip chip-green">LOW water</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg2);border-radius:8px;"><span>🌸 Cotton</span><span class="chip chip-green">LOW water</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div id="page-analytics" class="content fade-in" style="display:none;">
+      <div class="card">
+        <div class="card-title"><span>📈</span> Soil Moisture Trend <span class="live-badge">● LIVE</span></div>
+        <div class="chart-wrap" style="height:260px;"><canvas id="moisture-chart"></canvas></div>
+      </div>
+      <div class="grid-2">
+        <div class="card"><div class="card-title"><span>🥧</span> Irrigation Decisions</div><div class="chart-wrap" style="height:200px;"><canvas id="decision-chart"></canvas></div></div>
+        <div class="card" style="display:flex;flex-direction:column;gap:10px;">
+          <div class="card-title"><span>🧠</span> Model Info</div>
+          <div><div class="stat-label">Algorithm</div><div style="margin-top:4px;">Random Forest (200 trees)</div></div>
+          <div class="divider"></div>
+          <div><div class="stat-label">Training Samples</div><div style="margin-top:4px;">2,160</div></div>
+          <div class="divider"></div>
+          <div><div class="stat-label">Accuracy</div><div style="font-size:1.4rem;font-weight:700;font-family:var(--font-h);color:var(--accent2);margin-top:4px;">88.33%</div></div>
+          <div class="divider"></div>
+          <div><div class="stat-label">AUC Score</div><div style="font-size:1.2rem;font-weight:700;font-family:var(--font-h);color:var(--accent);margin-top:4px;">0.9375</div></div>
+          <div class="divider"></div>
+          <div><div class="stat-label">Session Stats</div>
+            <div style="margin-top:6px;font-size:.82rem;">Predictions: <strong id="stat-predictions">0</strong> &nbsp;|&nbsp; Irrigation rate: <strong id="stat-irr-rate">0%</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PUMP -->
+    <div id="page-pump" class="content fade-in" style="display:none;">
+      <div class="card" style="max-width:480px;">
+        <div class="card-title"><span>💧</span> Pump Control Panel</div>
+        <div style="text-align:center;padding:24px 0;">
+          <div style="font-size:5rem;margin-bottom:12px;" id="pump-big-icon">⭕</div>
+          <div class="pump-status pump-off" id="pump-big-status">OFF</div>
+          <div style="color:var(--muted);font-size:.8rem;margin-top:6px;">Synced with Blynk + Firebase in real time</div>
+          <div style="display:flex;gap:12px;justify-content:center;margin-top:24px;">
+            <button class="btn btn-success" onclick="setPump('ON')">▶ Start Pump</button>
+            <button class="btn btn-danger" onclick="setPump('OFF')">■ Stop Pump</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="page-settings" class="content fade-in" style="display:none;">
+      <div class="card" style="max-width:560px;">
+        <div class="card-title"><span>⚙️</span> Backend API</div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="field"><label>Flask Backend URL</label><input type="text" id="api-url-input" placeholder="https://your-app.onrender.com"/></div>
+          <button class="btn btn-primary" style="width:fit-content;" onclick="saveSettings()">Save</button>
+        </div>
+      </div>
+      <div class="card" style="max-width:560px;">
+        <div class="card-title"><span>📡</span> Firebase Status</div>
+        <div style="font-size:.85rem;display:flex;flex-direction:column;gap:8px;">
+          <div>Project: <strong>SmartIrrigationIoT</strong></div>
+          <div>Database: <strong style="font-size:.75rem;">smartirrigationiot-2e53a-default-rtdb.asia-southeast1</strong></div>
+          <div>Connection: <strong id="db-conn-status">Checking…</strong></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<div id="toast"></div>
+
+<script type="module">
+const firebaseConfig = {
+  apiKey:            "AIzaSyBxqoXI9Wv7I1XAlAq2s4pc0YPGi2qM1Lk",
+  authDomain:        "smartirrigationiot-2e53a.firebaseapp.com",
+  databaseURL:       "https://smartirrigationiot-2e53a-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:         "smartirrigationiot-2e53a",
+  storageBucket:     "smartirrigationiot-2e53a.firebasestorage.app",
+  messagingSenderId: "423153288495",
+  appId:             "1:423153288495:web:465728ed0cd055f4ffcdda",
+};
+
+let firebaseDB    = null;
+let autoMode      = false;
+let pumpStatus    = 'OFF';
+let pumpMode      = 'MANUAL';
+let isDemoMode    = false;
+let rainChart     = null;
+let moistChart    = null;
+let decChart      = null;
+let predHistory   = [];
+let moistHistory  = [];
+let anomalyChecks = 0;
+let anomalyFound  = 0;
+let totalPred     = 0;
+let totalIrr      = 0;
+
+// ✅ FIX 1: Removed broken `if (!saved)` block — use proper default here
+if (!localStorage.getItem('api_url')) {
+  localStorage.setItem('api_url', 'http://192.168.1.10:5001');
+}
+
+async function initFirebase() {
+  try {
+    const { initializeApp }  = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+    const { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+    const { getDatabase, ref, set, onValue } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+
+    const app      = initializeApp(firebaseConfig);
+    const auth     = getAuth(app);
+    const provider = new GoogleAuthProvider();
+    const db       = getDatabase(app);
+    firebaseDB     = { ref, set, onValue, db };
+
+    // Live sensor data
+    onValue(ref(db, 'smart_irrigation/live_data'), snap => {
+      if (!snap.exists()) return;
+      const d = snap.val();
+      if (d.soil_moisture !== undefined) {
+        const m = parseFloat(d.soil_moisture);
+        document.getElementById('moisture-input').value = Math.round(m);
+        document.getElementById('stat-moisture').innerHTML = `${m.toFixed(1)}<span class="stat-unit">%</span>`;
+        document.getElementById('moisture-bar').style.width = m + '%';
+        moistHistory.push({ t: new Date().toLocaleTimeString(), v: m });
+        if (moistHistory.length > 20) moistHistory.shift();
+        updateMoistChart();
+      }
+      const lu = document.getElementById('last-update');
+      if (lu) { lu.textContent = '📡 ' + new Date().toLocaleTimeString(); lu.dataset.lastms = Date.now(); }
+      updateDeviceStatus();
+    });
+
+    // ✅ FIX 2: Listen to pump/status and pump/mode as separate paths
+    // This matches how the ESP32 writes them individually
+    onValue(ref(db, 'smart_irrigation/pump/status'), snap => {
+      if (!snap.exists()) return;
+      const status = snap.val() || 'OFF';
+      updatePumpUI(status, pumpMode);
+    });
+
+    onValue(ref(db, 'smart_irrigation/pump/mode'), snap => {
+      if (!snap.exists()) return;
+      const mode = snap.val() || 'MANUAL';
+      pumpMode = mode;
+      updatePumpUI(pumpStatus, mode);
+    });
+
+    document.getElementById('firebase-status').textContent = '🟢 Firebase';
+    document.getElementById('firebase-status').style.color = 'var(--accent2)';
+    document.getElementById('db-conn-status').textContent  = 'Connected ✓';
+    return { auth, provider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut };
+  } catch(e) {
+    document.getElementById('firebase-status').textContent = '🔴 Firebase';
+    document.getElementById('db-conn-status').textContent  = 'Failed: ' + e.message;
+    return null;
+  }
+}
+
+async function checkRedirectResult() {
+  try {
+    const { getAuth, getRedirectResult } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+    const { getDatabase, ref, set, onValue } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getDatabase(app);
+    firebaseDB = { ref, set, onValue, db };
+    const result = await getRedirectResult(auth);
+    if (result && result.user) {
+      const user = result.user;
+      document.getElementById('firebase-status').textContent = '🟢 Firebase';
+      document.getElementById('firebase-status').style.color = 'var(--accent2)';
+      if (firebaseDB) {
+        await firebaseDB.set(
+          firebaseDB.ref(firebaseDB.db, `smart_irrigation/users/${user.uid}`),
+          { name: user.displayName, email: user.email, photo: user.photoURL, lastLogin: new Date().toISOString() }
+        );
+      }
+      showApp(user.displayName || user.email, user.photoURL);
+    }
+  } catch(e) { console.warn('Redirect check:', e.message); }
+}
+checkRedirectResult();
+
+window.handleGoogleLogin = async function() {
+  const btn = document.getElementById('login-btn');
+  const err = document.getElementById('login-error');
+  err.style.display = 'none';
+  btn.disabled  = true;
+  btn.innerHTML = `<div class="spinner" style="border-top-color:#4285F4;border-color:rgba(0,0,0,.1);"></div> Signing in…`;
+  try {
+    const fb = await initFirebase();
+    if (!fb) throw new Error('Firebase not configured');
+    try {
+      const result = await fb.signInWithPopup(fb.auth, fb.provider);
+      const user   = result.user;
+      if (firebaseDB) {
+        await firebaseDB.set(
+          firebaseDB.ref(firebaseDB.db, `smart_irrigation/users/${user.uid}`),
+          { name: user.displayName, email: user.email, photo: user.photoURL, lastLogin: new Date().toISOString() }
+        );
+      }
+      showApp(user.displayName || user.email, user.photoURL);
+    } catch(popupErr) {
+      if (popupErr.code === 'auth/popup-blocked' || popupErr.code === 'auth/popup-closed-by-user') {
+        btn.innerHTML = `<div class="spinner" style="border-top-color:#4285F4;border-color:rgba(0,0,0,.1);"></div> Redirecting…`;
+        await fb.signInWithRedirect(fb.auth, fb.provider);
+      } else { throw popupErr; }
+    }
+  } catch(e) {
+    err.textContent   = e.code === 'auth/popup-closed-by-user' ? 'Sign-in cancelled.' : e.message;
+    err.style.display = 'block';
+    btn.disabled      = false;
+    btn.innerHTML     = `<svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>Continue with Google`;
+  }
+};
+
+window.handleDemo = async function() {
+  isDemoMode = true;
+  await initFirebase().catch(() => {});
+  showApp('demo@aquamind.ai');
+  for (let i = 0; i < 8; i++) moistHistory.push({ t: `T-${8-i}`, v: 30 + Math.random() * 50 });
+  updateMoistChart();
+  setInterval(() => {
+    if (!isDemoMode) return;
+    const v = 25 + Math.random() * 60;
+    document.getElementById('moisture-input').value = Math.round(v);
+    document.getElementById('stat-moisture').innerHTML = `${v.toFixed(1)}<span class="stat-unit">%</span>`;
+    document.getElementById('moisture-bar').style.width = v + '%';
+    const lu = document.getElementById('last-update');
+    if (lu) { lu.textContent = '📡 ' + new Date().toLocaleTimeString(); lu.dataset.lastms = Date.now(); }
+    updateDeviceStatus();
+    moistHistory.push({ t: new Date().toLocaleTimeString(), v });
+    if (moistHistory.length > 20) moistHistory.shift();
+    updateMoistChart();
+  }, 4000);
+};
+
+window.handleLogout = async function() {
+  try {
+    const { getAuth, signOut } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+    await signOut(getAuth());
+  } catch(e) { console.warn('signOut:', e); }
+  document.getElementById('app').style.display   = 'none';
+  document.getElementById('login-page').style.display = 'flex';
+  isDemoMode = false;
+};
+
+function showApp(nameOrEmail, photoURL) {
+  document.getElementById('login-page').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  const name      = (nameOrEmail||'Farmer').includes('@') ? nameOrEmail.split('@')[0] : nameOrEmail;
+  const firstName = name.split(' ')[0];
+  document.getElementById('user-name-display').textContent = firstName;
+  const avatar = document.getElementById('user-avatar');
+  if (photoURL) {
+    avatar.innerHTML = `<img src="${photoURL}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" onerror="this.parentElement.textContent='${firstName[0].toUpperCase()}'"/>`;
+  } else {
+    avatar.textContent = firstName[0].toUpperCase();
+  }
+  initCharts();
+  showToast('Welcome, ' + firstName + '! 👋');
+}
+
+window.showPage = function(id) {
+  document.querySelectorAll('[id^="page-"]').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const pg = document.getElementById('page-' + id);
+  if (pg) pg.style.display = 'flex';
+  const titles = { dashboard:'Dashboard', anomaly:'Anomaly Detection', recommend:'Crop Recommendation', analytics:'Analytics', pump:'Pump Control', settings:'Settings' };
+  document.getElementById('page-title').textContent = titles[id] || id;
+  document.querySelectorAll('.nav-item').forEach(el => {
+    if (el.getAttribute('onclick')?.includes(`'${id}'`)) el.classList.add('active');
+  });
+};
+
+async function apiPost(path, body) {
+  const base = localStorage.getItem('api_url') || 'http://192.168.1.10:5001';
+  const r = await fetch(base + path, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+
+window.runPrediction = async function() {
+  const crop     = document.getElementById('crop-select').value;
+  const city     = document.getElementById('city-input').value.trim();
+  const moisture = parseFloat(document.getElementById('moisture-input').value);
+  const btn      = document.getElementById('predict-btn');
+  if (!city)       { showToast('Please enter a city.'); return; }
+  if (isNaN(moisture)) { showToast('Soil moisture is required.'); return; }
+  btn.innerHTML = '<div class="spinner"></div>'; btn.disabled = true;
+
+  try {
+    let data;
+    if (isDemoMode) {
+      await new Promise(r => setTimeout(r, 1200));
+      const THRESHOLDS = {rice:70,sugarcane:65,vegetables:55,maize:45,cotton:40,wheat:35};
+      const DEMAND     = {rice:'HIGH',sugarcane:'HIGH',vegetables:'MEDIUM',maize:'MEDIUM',wheat:'LOW',cotton:'LOW'};
+      const ALTS       = {rice:['maize','wheat','cotton'],sugarcane:['maize','vegetables'],vegetables:['wheat','cotton'],maize:['wheat','cotton'],wheat:[],cotton:[]};
+      const threshold  = THRESHOLDS[crop] || 50;
+      const demand     = DEMAND[crop] || 'MEDIUM';
+      const alts       = ALTS[crop] || [];
+      let score = 0;
+      if (moisture < threshold * 0.5) score += 3;
+      else if (moisture < threshold)   score += 2;
+      else if (moisture >= threshold * 1.2) score -= 1;
+      if (demand === 'HIGH') score += 1; else if (demand === 'LOW') score -= 1;
+      const needsWater = score > 0 ? 1 : 0;
+      const confidence = Math.min(95, 60 + Math.abs(score) * 5);
+      const anomalies  = (moisture > 100 || moisture < 0) ? [{type:'OUT_OF_RANGE',severity:'HIGH',message:`Moisture ${moisture}% is outside valid range.`}] : [];
+      const reasonParts = moisture < threshold ? [`soil moisture (${moisture.toFixed(0)}%) is below ${crop} threshold (${threshold}%)`] : [`soil moisture (${moisture.toFixed(0)}%) is adequate for ${crop}`];
+      const irrRate   = needsWater ? 73 : 35;
+      const shouldChg = irrRate > 65 && demand === 'HIGH';
+      data = {
+        irrigation_needed: needsWater, confidence, model_used: 'RuleEngine',
+        reason: (needsWater ? 'Irrigation recommended: ' : 'Irrigation not needed: ') + reasonParts.join('; ') + '.',
+        shap_top_features: [
+          {feature:'soil_moisture',     impact: moisture < threshold ? 2 : -1},
+          {feature:'crop_type',         impact: demand === 'HIGH' ? 1 : -1},
+          {feature:'rainfall_forecast', impact: needsWater ? 0 : -1},
+        ],
+        weather_summary: {
+          city, temperature: 28 + Math.random()*8, humidity: 55 + Math.random()*20,
+          description: 'Partly cloudy', forecast_rain_mm: needsWater ? 0.5 : 12,
+          daily_forecast: Array.from({length:7},(_,i) => ({
+            date: new Date(Date.now()+i*86400000).toISOString().slice(0,10),
+            rain_mm: Math.random()*15, temp_avg: 28+Math.random()*5, description:'clear sky',
+          })),
+        },
+        crop, soil_moisture: moisture, anomalies, anomaly_count: anomalies.length,
+        crop_recommendation: {
+          should_change: shouldChg, current_crop: crop, water_demand: demand,
+          irrigation_rate: irrRate, moisture_threshold: threshold, water_usage: irrRate+'%',
+          reason: shouldChg ? `${crop} has HIGH water demand and needed irrigation ${irrRate}% of the time.` : `${crop} water usage is acceptable.`,
+          message: shouldChg ? `Consider switching to a lower-demand crop.` : `${crop} is a water-efficient choice.`,
+          alternatives: shouldChg ? alts.slice(0,3) : [],
+          water_saved_est: shouldChg ? '40-60% reduction possible' : 'Already efficient',
+        },
+        session_stats: { total_predictions: totalPred+1, irrigation_rate: 55 }
+      };
+    } else {
+      data = await apiPost('/predict', { crop, city, soil_moisture: moisture, auto_mode: autoMode });
+    }
+
+    totalPred++; totalIrr += data.irrigation_needed;
+    document.getElementById('stat-predictions').textContent = totalPred;
+    document.getElementById('stat-irr-rate').textContent    = Math.round(totalIrr/totalPred*100) + '%';
+
+    renderPrediction(data);
+    renderWeatherCard(data.weather_summary);
+    renderRainChart(data.weather_summary.daily_forecast);
+    renderAnomalies(data.anomalies || []);
+    renderCropRec(data.crop_recommendation);
+
+    const w = data.weather_summary;
+    document.getElementById('stat-temp').innerHTML   = `${w.temperature.toFixed(1)}<span class="stat-unit">°C</span>`;
+    document.getElementById('stat-rain').innerHTML   = `${w.forecast_rain_mm}<span class="stat-unit">mm</span>`;
+    document.getElementById('stat-desc').textContent = w.description || '–';
+    const tc = document.getElementById('stat-temp-city');
+    if (tc) tc.textContent = w.city || '';
+
+    predHistory.unshift({ time: new Date().toLocaleTimeString(), crop, city, moisture, result: data.irrigation_needed ? '💧 Irrigate' : '✅ Skip' });
+    if (predHistory.length > 20) predHistory.pop();
+    renderHistory();
+    updateDecChart();
+    if (autoMode) setPump(data.irrigation_needed ? 'ON' : 'OFF');
+
+  } catch(e) {
+    showToast('⚠️ ' + e.message, 4000);
+  } finally {
+    btn.innerHTML = '⚡ Analyse'; btn.disabled = false;
+  }
+};
+
+function renderPrediction(data) {
+  const banner = document.getElementById('rec-banner');
+  // ✅ FIX 3: Style via style property, not className (preserves id-based CSS)
+  banner.style.display = 'flex';
+  banner.style.background = data.irrigation_needed
+    ? 'linear-gradient(135deg,rgba(56,189,248,.12),rgba(14,165,233,.06))'
+    : 'linear-gradient(135deg,rgba(52,211,153,.1),rgba(16,185,129,.05))';
+  banner.style.border = data.irrigation_needed
+    ? '1px solid rgba(56,189,248,.3)'
+    : '1px solid rgba(52,211,153,.25)';
+  banner.style.borderRadius = 'var(--card-r)';
+  banner.style.padding = '20px 24px';
+  document.getElementById('rec-icon').textContent       = data.irrigation_needed ? '💧' : '✅';
+  document.getElementById('rec-title').textContent      = data.irrigation_needed ? 'Irrigation Recommended' : 'No Irrigation Needed';
+  document.getElementById('rec-reason').textContent     = data.reason;
+  document.getElementById('rec-confidence').textContent = data.confidence.toFixed(0) + '%';
+  const shap = (data.shap_top_features || []).map(f => {
+    const dir = f.impact > 0 ? '↑' : '↓';
+    const cls = f.impact > 0 ? 'chip-red' : 'chip-green';
+    return `<span class="chip ${cls}">${dir} ${f.feature.replace(/_/g,' ')}</span>`;
+  }).join('');
+  const modelChip = data.model_used ? `<span class="chip chip-blue">🧠 ${data.model_used}</span>` : '';
+  document.getElementById('rec-chips').innerHTML = `
+    <span class="chip chip-blue">🌱 ${data.crop}</span>
+    <span class="chip chip-amber">💧 ${data.soil_moisture}%</span>
+    <span class="chip ${data.irrigation_needed ? 'chip-blue':'chip-green'}">${data.irrigation_needed ? '🔵 Pump ON':'🟢 Pump OFF'}</span>
+    ${data.anomaly_count > 0 ? `<span class="chip chip-red">⚠️ ${data.anomaly_count} Anomaly</span>` : ''}
+    ${modelChip}${shap}
+  `;
+}
+
+function renderWeatherCard(w) {
+  document.getElementById('weather-card-content').innerHTML = `
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px;">
+      <div style="font-size:2.8rem;">🌤</div>
+      <div>
+        <div style="font-family:var(--font-h);font-size:2.5rem;font-weight:800;line-height:1;">${w.temperature.toFixed(1)}<span style="font-size:1rem;color:var(--muted);">°C</span></div>
+        <div style="font-size:.85rem;color:var(--muted);margin-top:2px;">${w.description} · ${w.city}</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.78rem;">
+      <span>💦 Humidity ${w.humidity}%</span>
+      <span>🌧 Rain ${w.forecast_rain_mm}mm/24h</span>
+    </div>`;
+}
+
+function renderRainChart(daily) {
+  const ctx = document.getElementById('rain-chart').getContext('2d');
+  if (rainChart) rainChart.destroy();
+  rainChart = new Chart(ctx, {
+    type:'bar',
+    data:{ labels: daily.map(d => new Date(d.date).toLocaleDateString('en',{weekday:'short'})),
+      datasets:[{ label:'Rain (mm)', data: daily.map(d => d.rain_mm),
+        backgroundColor:'rgba(56,189,248,.35)', borderColor:'rgba(56,189,248,.9)', borderWidth:1.5, borderRadius:6 }]
+    },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{ x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#64748b'}},
+               y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#64748b'},min:0} }
+    }
+  });
+}
+
+function renderAnomalies(anomalies) {
+  anomalyChecks++;
+  if (anomalies.length > 0) { anomalyFound += anomalies.length; document.getElementById('anomaly-badge').style.display = 'flex'; showToast(`⚠️ ${anomalies.length} anomaly detected!`, 4000); }
+  else { document.getElementById('anomaly-badge').style.display = 'none'; }
+  document.getElementById('anomaly-checks').textContent = anomalyChecks;
+  document.getElementById('anomaly-found').textContent  = anomalyFound;
+  document.getElementById('anomaly-status').textContent = anomalyFound > 0 ? 'ALERT' : 'NORMAL';
+  document.getElementById('anomaly-status').style.color = anomalyFound > 0 ? 'var(--danger)' : 'var(--accent2)';
+  const el = document.getElementById('anomaly-results');
+  el.innerHTML = anomalies.length === 0
+    ? '<div class="alert-card alert-normal"><span>✅</span><div>No anomalies detected. Sensor readings are normal.</div></div>'
+    : anomalies.map(a => `<div class="alert-card ${a.severity==='HIGH'?'alert-high':'alert-medium'}"><span>${a.severity==='HIGH'?'🔴':'🟡'}</span><div><strong>${a.type}</strong> — ${a.message}</div></div>`).join('');
+}
+
+window.testAnomaly = async function() {
+  const val = parseFloat(document.getElementById('anomaly-test-val').value);
+  if (isNaN(val)) { showToast('Enter a moisture value first.'); return; }
+  try {
+    let anomalies;
+    if (isDemoMode) {
+      anomalies = val < 0 || val > 100 ? [{type:'OUT_OF_RANGE',severity:'HIGH',message:`Value ${val}% is outside valid range.`}] : [];
+    } else {
+      const r = await apiPost('/anomaly', { soil_moisture: val });
+      anomalies = r.anomalies || [];
+    }
+    renderAnomalies(anomalies);
+    showToast(anomalies.length ? `⚠️ ${anomalies.length} anomaly found` : '✅ Normal reading');
+  } catch(e) { showToast('Error: ' + e.message); }
+};
+
+function renderCropRec(rec) {
+  if (!rec) return;
+  const el = document.getElementById('crop-rec-result');
+  if (!el) return;
+  const demandChip = rec.water_demand === 'HIGH' ? 'chip-red' : rec.water_demand === 'MEDIUM' ? 'chip-amber' : 'chip-green';
+  el.innerHTML = `
+    <div class="crop-rec-card ${rec.should_change ? 'crop-rec-change' : 'crop-rec-ok'}">
+      <div style="font-family:var(--font-h);font-size:1rem;font-weight:700;margin-bottom:8px;">${rec.should_change ? '⚠️ Crop Change Recommended' : '✅ Current Crop is Efficient'}</div>
+      <div style="font-size:.82rem;color:var(--muted);margin-bottom:8px;">${rec.reason || rec.message || ''}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+        <span class="chip chip-blue">🌱 ${rec.current_crop}</span>
+        <span class="chip ${demandChip}">💧 ${rec.water_demand||''} demand</span>
+        <span class="chip chip-amber">Usage: ${rec.water_usage}</span>
+        ${rec.moisture_threshold ? `<span class="chip chip-blue">Threshold: ${rec.moisture_threshold}%</span>` : ''}
+        ${(rec.alternatives||[]).map(a => `<span class="chip chip-green">→ ${a}</span>`).join('')}
+        <span class="chip chip-green">💧 ${rec.water_saved_est}</span>
+      </div>
+    </div>`;
+}
+
+window.getCropRec = async function() {
+  const crop  = document.getElementById('rec-crop').value;
+  const total = parseInt(document.getElementById('rec-total').value);
+  const irr   = parseInt(document.getElementById('rec-irrigated').value);
+  if (!total || !irr) { showToast('Enter all values.'); return; }
+  try {
+    let rec;
+    if (isDemoMode) {
+      const THRESHOLDS = {rice:70,sugarcane:65,vegetables:55,maize:45,cotton:40,wheat:35};
+      const DEMAND     = {rice:'HIGH',sugarcane:'HIGH',vegetables:'MEDIUM',maize:'MEDIUM',wheat:'LOW',cotton:'LOW'};
+      const ALTS       = {rice:['maize','wheat','cotton'],sugarcane:['maize','vegetables'],vegetables:['wheat','cotton'],maize:['wheat','cotton'],wheat:[],cotton:[]};
+      const rate=irr/total*100, demand=DEMAND[crop]||'MEDIUM', threshold=THRESHOLDS[crop]||50, alts=ALTS[crop]||[];
+      const shouldChg = (rate>65&&demand==='HIGH')||(rate>80&&demand==='MEDIUM');
+      rec = { should_change:shouldChg, current_crop:crop, water_demand:demand, irrigation_rate:Math.round(rate), moisture_threshold:threshold, water_usage:rate.toFixed(0)+'%',
+        reason: shouldChg ? `${crop} has ${demand} water demand and needed irrigation ${rate.toFixed(0)}% of the time.` : `${crop} needed irrigation ${rate.toFixed(0)}% of the time, which is within acceptable limits.`,
+        message: shouldChg ? `Consider switching from ${crop} to a lower-demand crop.` : `${crop} water usage is acceptable.`,
+        alternatives: shouldChg ? alts.slice(0,3) : [], water_saved_est: shouldChg ? '40-60% reduction possible' : 'No change needed',
+      };
+    } else {
+      rec = await apiPost('/recommend', { crop, total_readings: total, irrigation_count: irr });
+    }
+    renderCropRec(rec);
+  } catch(e) { showToast('Error: ' + e.message); }
+};
+
+// ✅ FIX 4: setPump writes status and mode as SEPARATE Firebase paths
+// matching exactly how ESP32 reads them
+window.setPump = async function(status) {
+  pumpStatus = status;
+  updatePumpUI(status, pumpMode);
+  if (firebaseDB && !isDemoMode) {
+    try {
+      await firebaseDB.set(firebaseDB.ref(firebaseDB.db, 'smart_irrigation/pump/status'), status);
+      await firebaseDB.set(firebaseDB.ref(firebaseDB.db, 'smart_irrigation/pump/on'), status === 'ON');
+      await firebaseDB.set(firebaseDB.ref(firebaseDB.db, 'smart_irrigation/pump/mode'), pumpMode);
+    } catch(e) { console.warn('Firebase setPump error:', e); showToast('⚠️ Firebase write failed'); }
+  }
+  showToast(`Pump turned ${status}`);
+};
+
+function updatePumpUI(status, mode) {
+  pumpStatus = status; pumpMode = mode;
+  const isOn = status === 'ON';
+  const sd   = document.getElementById('pump-status-display');
+  const bs   = document.getElementById('pump-big-status');
+  const bi   = document.getElementById('pump-big-icon');
+  const mt   = document.getElementById('mode-toggle');
+  const ml   = document.getElementById('mode-label');
+  if (sd) { sd.textContent = status; sd.className = 'pump-status ' + (isOn?'pump-on':'pump-off'); }
+  if (bs) { bs.textContent = status; bs.className = 'pump-status ' + (isOn?'pump-on':'pump-off'); }
+  if (bi) bi.textContent   = isOn ? '🔵' : '⭕';
+  if (mt) mt.classList.toggle('on', mode === 'AUTO');
+  if (ml) ml.textContent   = mode;
+}
+
+window.toggleAuto = function() {
+  autoMode = !autoMode;
+  document.getElementById('auto-toggle').classList.toggle('on', autoMode);
+  showToast(autoMode ? '🤖 AUTO mode ON' : 'AUTO mode OFF');
+};
+
+// ✅ FIX 5: toggleMode now writes to Firebase
+window.toggleMode = async function() {
+  pumpMode = pumpMode === 'MANUAL' ? 'AUTO' : 'MANUAL';
+  updatePumpUI(pumpStatus, pumpMode);
+  if (firebaseDB && !isDemoMode) {
+    try {
+      await firebaseDB.set(firebaseDB.ref(firebaseDB.db, 'smart_irrigation/pump/mode'), pumpMode);
+    } catch(e) { console.warn('toggleMode Firebase error:', e); }
+  }
+  showToast(`Mode → ${pumpMode}`);
+};
+
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  if (!predHistory.length) { el.innerHTML = '<div style="color:var(--muted);font-size:.8rem;">No predictions yet.</div>'; return; }
+  el.innerHTML = predHistory.map(h => `
+    <div style="background:var(--bg2);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;font-size:.78rem;">
+      <div style="flex:1;"><strong>${h.crop}</strong> · ${h.city} · 💧${h.moisture}%</div>
+      <div style="color:var(--muted);">${h.time}</div>
+      <div>${h.result}</div>
+    </div>`).join('');
+}
+
+function initCharts() {
+  const mCtx = document.getElementById('moisture-chart')?.getContext('2d');
+  if (mCtx) {
+    moistChart = new Chart(mCtx, {
+      type:'line',
+      data:{ labels:[], datasets:[{ label:'Soil Moisture %', data:[],
+        borderColor:'rgba(56,189,248,1)', backgroundColor:'rgba(56,189,248,.08)',
+        fill:true, tension:0.4, pointRadius:4, pointBackgroundColor:'var(--accent)' }] },
+      options:{ responsive:true, maintainAspectRatio:false,
+        scales:{ x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#64748b'}},
+                 y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#64748b'},min:0,max:100} } }
+    });
+  }
+  updateDecChart();
+}
+
+function updateMoistChart() {
+  if (!moistChart) return;
+  moistChart.data.labels = moistHistory.map(h => h.t);
+  moistChart.data.datasets[0].data = moistHistory.map(h => h.v);
+  moistChart.update();
+}
+
+function updateDecChart() {
+  const ctx = document.getElementById('decision-chart')?.getContext('2d');
+  if (!ctx) return;
+  const ir = predHistory.filter(h => h.result.includes('Irrigate')).length;
+  const sk = predHistory.length - ir;
+  if (decChart) decChart.destroy();
+  decChart = new Chart(ctx, {
+    type:'doughnut',
+    data:{ labels:['Irrigate','Skip'], datasets:[{ data:[ir||1,sk||1],
+      backgroundColor:['rgba(56,189,248,.7)','rgba(52,211,153,.7)'],
+      borderColor:['rgba(56,189,248,1)','rgba(52,211,153,1)'], borderWidth:2 }] },
+    options:{ responsive:true, maintainAspectRatio:false, cutout:'60%',
+      plugins:{legend:{labels:{color:'#94a3b8'}}} }
+  });
+}
+
+window.saveSettings = function() {
+  const url = document.getElementById('api-url-input').value.trim();
+  if (url) { localStorage.setItem('api_url', url); showToast('Saved!'); }
+};
+
+function updateDeviceStatus() {
+  const dot  = document.getElementById('device-dot');
+  const text = document.getElementById('device-status-text');
+  if (!dot || !text) return;
+  const lastUpdateEl = document.getElementById('last-update');
+  const lastTime     = lastUpdateEl?.dataset?.lastms;
+  const elapsed      = lastTime ? Date.now() - parseInt(lastTime) : Infinity;
+  const fb = document.getElementById('firebase-status');
+  if (!navigator.onLine) {
+    dot.style.background = 'var(--danger)'; text.textContent = 'No Internet';
+    if (fb) { fb.textContent = '🔴 Offline'; fb.style.color = 'var(--danger)'; }
+  } else if (elapsed > 30000 || !lastTime) {
+    dot.style.background = 'var(--accent3)'; text.textContent = 'Device Offline';
+  } else {
+    dot.style.background = 'var(--accent2)'; dot.style.animation = 'pulse 2s infinite';
+    text.textContent = 'Device Online';
+  }
+}
+
+window.addEventListener('online',  updateDeviceStatus);
+window.addEventListener('offline', updateDeviceStatus);
+setInterval(updateDeviceStatus, 5000);
+
+function showToast(msg, ms=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), ms);
+}
+</script>
+</body>
+</html>

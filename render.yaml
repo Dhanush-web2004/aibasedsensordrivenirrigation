@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: smart-irrigation-api
+    env: python
+    buildCommand: pip install -r backend/requirements.txt && cd model && python train_model.py
+    startCommand: cd backend && gunicorn app:app --workers 2 --bind 0.0.0.0:$PORT
+    envVars:
+      - key: OPENWEATHER_API_KEY
+        sync: false
+      - key: FIREBASE_DB_URL
+        sync: false
+      - key: FIREBASE_CREDENTIALS_PATH
+        sync: false
+      - key: FLASK_DEBUG
+        value: false
